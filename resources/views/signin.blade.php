@@ -41,13 +41,12 @@
     </div>
 </div>
 
-{{-- JavaScript handles everything --}}
+{{-- JS redirection --}}
 <script>
 function fakeSignIn() {
     const email    = document.getElementById('email').value
     const password = document.getElementById('password').value
 
-    // Basic check
     if (email === '' || password === '') {
         alert('Please fill all fields!')
         return
