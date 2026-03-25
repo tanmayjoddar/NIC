@@ -19,6 +19,7 @@ class FormController extends Controller
             'email'   => 'required|email',
             'phone'   => 'required|string|max:15',
             'message' => 'required|string|max:500',
+            'picture' => 'required|string|base64',
         ]);
 
         return back()->with('success', 'Form submitted successfully!');
