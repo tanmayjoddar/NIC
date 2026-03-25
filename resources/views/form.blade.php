@@ -6,7 +6,7 @@
     <div class="col-md-6">
         <div class="card shadow p-4">
 
-            <h3 class="mb-4 fw-bold">NiC Registration Form</h3>
+            <h3 class="mb-4 fw-bold">Fill the Form</h3>
 
             {{-- Show success message --}}
             @if(session('success'))
