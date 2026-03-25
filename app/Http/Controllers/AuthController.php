@@ -52,7 +52,7 @@ class AuthController extends Controller
 
         session(['user' => $user]);
 
-        return redirect('/form')->with('success', 'Welcome ' . $user->name . '! ✅');
+        return redirect('/form')->with('success', 'Welcome ' . $user->name . '! ');
     }
 
     public function logout()

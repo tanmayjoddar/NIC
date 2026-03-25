@@ -3,32 +3,31 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>NiC Project</title>
+    <title>NIC Project</title>
 
-    <!-- Bootstrap CSS (no setup needed) -->
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
         rel="stylesheet"
     />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
 
     <style>
-        body { background: #f5f5f5; }
+        body { background: #111827; }
         .card { border-radius: 12px; }
     </style>
 </head>
 <body>
 
     <!-- Navbar -->
-    <nav class="navbar navbar-dark bg-dark px-4">
-        <span class="navbar-brand fw-bold">NiC Project</span>
+    <nav class="navbar navbar-dark px-4" style="background-color: #1e2a38;">
+        <span class="navbar-brand fw-bold text-info">NiC Project</span>
     </nav>
 
     <!-- Page Content -->
     <div class="container mt-5">
-        @yield('content')  {{-- ← child pages go here --}}
+        @yield('content')
     </div>
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
