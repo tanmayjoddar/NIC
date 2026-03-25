@@ -12,10 +12,8 @@ class FormController extends Controller
         return view('form');
     }
 
-    // Handle form submission
     public function submit(Request $request)
     {
-        // Validate
         $validated = $request->validate([
             'name'    => 'required|string|max:100',
             'email'   => 'required|email',
@@ -23,8 +21,6 @@ class FormController extends Controller
             'message' => 'required|string|max:500',
         ]);
 
-        // For now just return success
-        // Later we will save to DB
         return back()->with('success', 'Form submitted successfully!');
     }
 }
