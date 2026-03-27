@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\OtpToken;
 
 class AuthController extends Controller
 {
@@ -39,25 +40,64 @@ class AuthController extends Controller
 
     public function signinSubmit(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'email'    => 'required|email',
             'password' => 'required',
+            'captcha'  => 'required',
         ]);
 
+        // ── CAPTCHA Check ──────────────────────────────
+        if ($request->captcha !== session('captcha_answer')) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Incorrect CAPTCHA answer. Please refresh and try again.',
+                ], 422);
+            }
+            return back()
+                ->withInput($request->only('email'))
+                ->with('error', 'Incorrect CAPTCHA answer. Please try again.');
+        }
+
+        // ── Credential Check ───────────────────────────
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return back()->with('error', 'Invalid email or password!');
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid email or password.',
+                ], 422);
+            }
+            return back()
+                ->withInput($request->only('email'))
+                ->with('error', 'Invalid email or password!');
         }
 
-        session(['user' => $user]);
+        // ── Generate OTP ───────────────────────────────
+        OtpToken::where('email', $user->email)->delete();
+        $otp = str_pad((string) rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        OtpToken::create([
+            'email'      => $user->email,
+            'otp'        => $otp,
+            'expires_at' => now()->addMinutes(10),
+        ]);
+        session(['otp_email' => $user->email]);
 
-        return redirect('/form')->with('success', 'Welcome ' . $user->name . '! ');
+        if ($request->ajax()) {
+            return response()->json([
+                'success'  => true,
+                'redirect' => '/otp',
+            ]);
+        }
+
+        return redirect('/otp')->with('success', 'OTP generated. Check the database `otp_tokens` table.');
     }
 
     public function logout()
     {
         session()->forget('user');
+        session()->forget('otp_email');
         return redirect('/signin')->with('success', 'Logged out!');
     }
 }
