@@ -5,7 +5,7 @@ use App\Http\Controllers\FormController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OtpController;
 use App\Http\Controllers\CaptchaController;
-
+use App\Http\Controllers\ForgotPasswordController;
 // Auth
 Route::get('/signup',  [AuthController::class, 'signupPage']);
 Route::post('/signup', [AuthController::class, 'signupSubmit']);
@@ -23,3 +23,12 @@ Route::post('/otp', [OtpController::class, 'verifyOtp']);
 // Form (protected by session check inside controller)
 Route::get('/form',    [FormController::class, 'index']);
 Route::post('/submit', [FormController::class, 'submit']);
+
+
+// ── Forgot Password ────────────────────────────────
+Route::get('/forget-password',  [ForgotPasswordController::class, 'showPage']);
+Route::post('/forget-password', [ForgotPasswordController::class, 'submit']);
+
+// ── Reset Password ─────────────────────────────────
+Route::get('/reset-password',  [ForgotPasswordController::class, 'showResetPage']);
+Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']);

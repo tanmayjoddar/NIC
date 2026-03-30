@@ -32,7 +32,6 @@
         <div class="card shadow p-4 border-0" style="background-color: #1e2a38;">
             <h3 class="mb-4 fw-bold text-white">Welcome Back</h3>
 
-            {{-- Flash messages (server-side fallback) --}}
             @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
             @endif
@@ -40,7 +39,6 @@
                 <div class="alert alert-warning">{{ session('error') }}</div>
             @endif
 
-            {{-- AJAX error box --}}
             <div id="ajax-error" class="alert alert-danger py-2" style="display:none;"></div>
 
             <form id="signin-form" action="/signin" method="POST" novalidate>
@@ -57,6 +55,13 @@
                     <input type="password" name="password" id="password"
                         class="form-control bg-dark text-white border-secondary"
                         placeholder="Enter password"/>
+
+                    {{-- ← ONLY NEW LINE ADDED --}}
+                    <div class="text-end mt-1">
+                        <a href="/forget-password" class="text-info" style="font-size:0.82rem;">
+                            Forgot Password?
+                        </a>
+                    </div>
                 </div>
 
                 {{-- ── CAPTCHA ──────────────────────────────────────── --}}
@@ -86,7 +91,6 @@
 </div>
 
 <script>
-    // ── CAPTCHA refresh ──────────────────────────────────────────────
     function refreshCaptcha() {
         document.getElementById('captcha-img').src = '/captcha?r=' + Date.now();
         const f = document.getElementById('captcha');
@@ -95,7 +99,6 @@
     }
     document.getElementById('captcha-img').addEventListener('click', refreshCaptcha);
 
-    // ── AJAX submit with loader ──────────────────────────────────────
     document.getElementById('signin-form').addEventListener('submit', async function (e) {
         e.preventDefault();
 
@@ -103,7 +106,6 @@
         const errorBox  = document.getElementById('ajax-error');
         const btn       = document.getElementById('submit-btn');
 
-        // Show spinner
         overlay.style.display = 'flex';
         btn.disabled = true;
         errorBox.style.display = 'none';
@@ -114,7 +116,7 @@
             const res = await fetch('/signin', {
                 method: 'POST',
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest',   // makes $request->ajax() = true
+                    'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
                 },
@@ -124,14 +126,12 @@
             const data = await res.json();
 
             if (data.success) {
-                // Keep spinner on while redirecting
                 window.location.href = data.redirect;
             } else {
                 overlay.style.display = 'none';
                 btn.disabled = false;
                 errorBox.textContent = data.message || 'Something went wrong.';
                 errorBox.style.display = 'block';
-                // Refresh CAPTCHA on error
                 refreshCaptcha();
             }
         } catch (err) {
@@ -144,4 +144,3 @@
 </script>
 
 @endsection
-
