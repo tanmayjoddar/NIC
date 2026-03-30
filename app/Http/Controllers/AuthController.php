@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\OtpToken;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -77,11 +78,15 @@ class AuthController extends Controller
         // ── Generate OTP ───────────────────────────────
         OtpToken::where('email', $user->email)->delete();
         $otp = str_pad((string) rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        $hashed = hash('sha256' , $otp);
+
         OtpToken::create([
             'email'      => $user->email,
-            'otp'        => $otp,
+            'otp'        => $hashed,
             'expires_at' => now()->addMinutes(10),
         ]);
+
+        Log::info('OTP for ' . $user->email . ' → ' . $otp); // ← plain in log
         session(['otp_email' => $user->email]);
 
         if ($request->ajax()) {
@@ -96,7 +101,7 @@ class AuthController extends Controller
 
     public function logout()
     {
-        session()->forget('user');
+        session()->forget('user_id');
         session()->forget('otp_email');
         return redirect('/signin')->with('success', 'Logged out!');
     }

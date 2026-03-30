@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('otp_tokens', function (Blueprint $table) {
             $table->id();
             $table->string('email')->index();
-            $table->string('otp', 6);
+            $table->string('otp', 64);
             $table->timestamp('expires_at');
             $table->timestamps();
-        });                                                                
+        });
     }
 
     /**

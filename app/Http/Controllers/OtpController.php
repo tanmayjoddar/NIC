@@ -56,7 +56,7 @@ class OtpController extends Controller
             return back()->with('error', 'OTP has expired. Please sign in again.');
         }
 
-        if ($request->otp !== $record->otp) {
+        if (hash('sha256',$request->otp) !== $record->otp) {
             if ($request->ajax()) {
                 return response()->json(['success' => false, 'message' => 'Invalid OTP. Please try again.'], 422);
             }
