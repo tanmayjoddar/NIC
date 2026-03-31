@@ -10,6 +10,10 @@ class Submission extends Model
     'name',
     'email',
     'phone',
+    'state_code',
+    'district_code',
+    'subdistrict_code',
+    'block_code',
     'message',
     'photo',
   ];

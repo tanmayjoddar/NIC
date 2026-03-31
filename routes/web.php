@@ -23,6 +23,9 @@ Route::post('/otp', [OtpController::class, 'verifyOtp']);
 // Form (protected by session check inside controller)
 Route::get('/form',    [FormController::class, 'index']);
 Route::post('/submit', [FormController::class, 'submit']);
+Route::get('/api/lgd/districts', [FormController::class, 'districts']);
+Route::get('/api/lgd/subdistricts', [FormController::class, 'subdistricts']);
+Route::get('/api/lgd/blocks', [FormController::class, 'blocks']);
 
 
 // ── Forgot Password ────────────────────────────────

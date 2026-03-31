@@ -193,6 +193,74 @@
                     @enderror
                 </div>
 
+                {{-- State --}}
+                <div class="mb-3">
+                    <label class="form-label" for="state_code">
+                        <i class="bi bi-geo-alt me-1 text-secondary"></i> State
+                    </label>
+                    <select id="state_code"
+                            name="state_code"
+                            class="form-select @error('state_code') is-invalid @enderror">
+                        <option value="">Select State</option>
+                        @foreach(($states ?? collect()) as $state)
+                            <option value="{{ $state->state_code }}" @selected(old('state_code') == $state->state_code)>
+                                {{ $state->state_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('state_code')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                {{-- District --}}
+                <div class="mb-3">
+                    <label class="form-label" for="district_code">
+                        <i class="bi bi-building me-1 text-secondary"></i> District
+                    </label>
+                    <select id="district_code"
+                            name="district_code"
+                            class="form-select @error('district_code') is-invalid @enderror"
+                            disabled>
+                        <option value="">Select District</option>
+                    </select>
+                    @error('district_code')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                {{-- Sub-district --}}
+                <div class="mb-3">
+                    <label class="form-label" for="subdistrict_code">
+                        <i class="bi bi-signpost me-1 text-secondary"></i> Sub-district
+                    </label>
+                    <select id="subdistrict_code"
+                            name="subdistrict_code"
+                            class="form-select @error('subdistrict_code') is-invalid @enderror"
+                            disabled>
+                        <option value="">Select Sub-district (optional)</option>
+                    </select>
+                    @error('subdistrict_code')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                {{-- Block --}}
+                <div class="mb-3">
+                    <label class="form-label" for="block_code">
+                        <i class="bi bi-diagram-3 me-1 text-secondary"></i> Block
+                    </label>
+                    <select id="block_code"
+                            name="block_code"
+                            class="form-select @error('block_code') is-invalid @enderror"
+                            disabled>
+                        <option value="">Select Block (optional)</option>
+                    </select>
+                    @error('block_code')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
                 {{-- Message --}}
                 <div class="mb-4">
                     <label class="form-label" for="message">
@@ -224,6 +292,9 @@
     'use strict';
 
     let cameraStream = null;
+    const oldDistrictCode = "{{ old('district_code', '') }}";
+    const oldSubdistrictCode = "{{ old('subdistrict_code', '') }}";
+    const oldBlockCode = "{{ old('block_code', '') }}";
 
     /* ── Upload from device → base64 ── */
     function handleFile(event) {
@@ -303,6 +374,122 @@
         preview.innerHTML = '<img src="' + base64 + '" alt="Profile photo preview">';
         preview.classList.add('has-photo');
         document.getElementById('photoBase64').value = base64;
+    }
+
+    function resetSelect(selectEl, placeholderText) {
+        selectEl.innerHTML = '';
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = placeholderText;
+        selectEl.appendChild(option);
+        selectEl.value = '';
+        selectEl.disabled = true;
+    }
+
+    function fillSelect(selectEl, items, valueKey, textKey, placeholderText, selectedValue) {
+        resetSelect(selectEl, placeholderText);
+        items.forEach(function (item) {
+            const option = document.createElement('option');
+            option.value = item[valueKey];
+            option.textContent = item[textKey];
+            selectEl.appendChild(option);
+        });
+        selectEl.disabled = false;
+        if (selectedValue) {
+            selectEl.value = String(selectedValue);
+        }
+    }
+
+    function loadDistricts(stateCode, selectedDistrict) {
+        const districtSelect = document.getElementById('district_code');
+        const subdistrictSelect = document.getElementById('subdistrict_code');
+        const blockSelect = document.getElementById('block_code');
+
+        resetSelect(districtSelect, 'Select District');
+        resetSelect(subdistrictSelect, 'Select Sub-district (optional)');
+        resetSelect(blockSelect, 'Select Block (optional)');
+
+        if (!stateCode) {
+            return Promise.resolve();
+        }
+
+        return fetch('/api/lgd/districts?state_code=' + encodeURIComponent(stateCode))
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                fillSelect(districtSelect, data, 'district_code', 'district_name', 'Select District', selectedDistrict);
+            });
+    }
+
+    function loadSubdistricts(districtCode, selectedSubdistrict) {
+        const subdistrictSelect = document.getElementById('subdistrict_code');
+
+        resetSelect(subdistrictSelect, 'Select Sub-district (optional)');
+
+        if (!districtCode) {
+            return Promise.resolve();
+        }
+
+        return fetch('/api/lgd/subdistricts?district_code=' + encodeURIComponent(districtCode))
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                fillSelect(subdistrictSelect, data, 'subdistrict_code', 'subdistrict_name', 'Select Sub-district (optional)', selectedSubdistrict);
+            });
+    }
+
+    function loadBlocks(districtCode, selectedBlock) {
+        const blockSelect = document.getElementById('block_code');
+
+        resetSelect(blockSelect, 'Select Block (optional)');
+
+        if (!districtCode) {
+            return Promise.resolve();
+        }
+
+        return fetch('/api/lgd/blocks?district_code=' + encodeURIComponent(districtCode))
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                fillSelect(blockSelect, data, 'block_code', 'block_name', 'Select Block (optional)', selectedBlock);
+            });
+    }
+
+    const stateSelect = document.getElementById('state_code');
+    const districtSelect = document.getElementById('district_code');
+
+    stateSelect.addEventListener('change', function () {
+        loadDistricts(stateSelect.value, '')
+            .catch(function () {
+                resetSelect(document.getElementById('district_code'), 'Select District');
+                resetSelect(document.getElementById('subdistrict_code'), 'Select Sub-district (optional)');
+                resetSelect(document.getElementById('block_code'), 'Select Block (optional)');
+            });
+    });
+
+    districtSelect.addEventListener('change', function () {
+        Promise.all([
+            loadSubdistricts(districtSelect.value, ''),
+            loadBlocks(districtSelect.value, ''),
+        ]).catch(function () {
+            resetSelect(document.getElementById('subdistrict_code'), 'Select Sub-district (optional)');
+            resetSelect(document.getElementById('block_code'), 'Select Block (optional)');
+        });
+    });
+
+    if (stateSelect.value) {
+        loadDistricts(stateSelect.value, oldDistrictCode)
+            .then(function () {
+                if (oldDistrictCode) {
+                    return Promise.all([
+                        loadSubdistricts(oldDistrictCode, oldSubdistrictCode),
+                        loadBlocks(oldDistrictCode, oldBlockCode),
+                    ]);
+                }
+                return Promise.resolve();
+            })
+            .catch(function () {
+                resetSelect(document.getElementById('district_code'), 'Select District');
+                resetSelect(document.getElementById('subdistrict_code'), 'Select Sub-district (optional)');
+                resetSelect(document.getElementById('block_code'), 'Select Block (optional)');
+            });
     }
 
     /* ── Prevent double-submit ── */
